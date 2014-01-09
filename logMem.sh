@@ -12,12 +12,14 @@ while [ 1 ]; do
 	if [ $LASTMEM -gt $MEMFREE  ]; then
 		echo $(date) Free memory: $MEMFREE buffers: $BUFFERS
 		for p in $PIDLIST; do
-			RSS=$(cat /proc/$p/statm | awk {'print $2'})
-			RSS=$(($RSS * $PAGE))
-			SHR=$(cat /proc/$p/statm | awk {'print $3'})
-			SHR=$(($SHR * $PAGE))
-			PRIV=$(($RSS - $SHR))
-			echo $(cat /proc/$p/status | grep Name) pid: $p MEM: priv: $PRIV kB rss: $RSS kB shared: $SHR kB
+			if [ -f /proc/$p/statm ]; then
+				RSS=$(cat /proc/$p/statm | awk {'print $2'})
+				RSS=$(($RSS * $PAGE))
+				SHR=$(cat /proc/$p/statm | awk {'print $3'})
+				SHR=$(($SHR * $PAGE))
+				PRIV=$(($RSS - $SHR))
+				echo $(cat /proc/$p/status | grep Name) pid: $p MEM: priv: $PRIV kB rss: $RSS kB shared: $SHR kB
+			fi
 		done
 		LASTMEM=$MEMFREE
 		echo "--"
