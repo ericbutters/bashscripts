@@ -2,15 +2,20 @@
 
 STATUS=$1
 PAGE=4
+DIV=1024
 #PIDLIST=$(cat /tmp/pid.list)
 PIDLIST=$(ls /proc | grep -v grep | grep '^[0-9]\{1,4\}$')
-LASTMEM=$(free -m | grep Mem | awk {'print $4'})
+LASTMEM=$(cat /proc/meminfo | grep -w MemFree | awk {'print $2'})
+LASTMEM=$(($LASTMEM / $DIV))
 
 while [ 1 ]; do
-	MEMFREE=$(free -m | grep Mem | awk {'print $4'})
-	BUFFERS=$(free | grep Mem | awk {'print $6'})
+#	PIDLIST=$(ls /proc | grep -v grep | grep '^[0-9]\{1,4\}$')
+	CACHE=$(cat /proc/meminfo | grep -w Cached | awk {'print $2'})
+	MEMFREE=$(cat /proc/meminfo | grep -w MemFree | awk {'print $2'})
+	MEMFREE=$(($MEMFREE / $DIV))
+	BUFFERS=$(cat /proc/meminfo | grep -w Buffers | awk {'print $2'})
 	if [ $LASTMEM -gt $MEMFREE  ]; then
-		echo $(date) Free memory: $MEMFREE buffers: $BUFFERS
+		echo $(date) Free memory: $MEMFREE MB cache: $CACHE kB buffers: $BUFFERS kB
 		for p in $PIDLIST; do
 			if [ -f /proc/$p/statm ]; then
 				RSS=$(cat /proc/$p/statm | awk {'print $2'})
