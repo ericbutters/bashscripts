@@ -4,7 +4,7 @@ STATUS=$1
 PAGE=4
 DIV=1024
 #PIDLIST=$(cat /tmp/pid.list)
-PIDLIST=$(ls /proc | grep -v grep | grep '^[0-9]\{1,4\}$')
+PIDLIST=$(ls /proc | grep -v grep | grep '^[0-9]\{1,5\}$')
 LASTMEM=$(cat /proc/meminfo | grep -w MemFree | awk {'print $2'})
 LASTMEM=$(($LASTMEM / $DIV))
 
@@ -14,8 +14,11 @@ while [ 1 ]; do
 	MEMFREE=$(cat /proc/meminfo | grep -w MemFree | awk {'print $2'})
 	MEMFREE=$(($MEMFREE / $DIV))
 	BUFFERS=$(cat /proc/meminfo | grep -w Buffers | awk {'print $2'})
+	MAPPED=$(cat /proc/meminfo | grep -w Mapped | awk {'print $2'})
+	SHMEM=$(cat /proc/meminfo | grep -w Shmem | awk {'print $2'})
+	SLAB=$(cat /proc/meminfo | grep -w Slab | awk {'print $2'})
 	if [ $LASTMEM -gt $MEMFREE  ]; then
-		echo $(date) Free memory: $MEMFREE MB cache: $CACHE kB buffers: $BUFFERS kB
+		echo $(date) Free memory: $MEMFREE MB cache: $CACHE kB buffers: $BUFFERS kB mapped: $MAPPED kB shmem: $SHMEM kB slab: $SLAB kB
 		for p in $PIDLIST; do
 			if [ -f /proc/$p/statm ]; then
 				RSS=$(cat /proc/$p/statm | awk {'print $2'})
@@ -29,6 +32,7 @@ while [ 1 ]; do
 		LASTMEM=$MEMFREE
 		echo "--"
 	fi
+	sleep 1
 done
   
 
