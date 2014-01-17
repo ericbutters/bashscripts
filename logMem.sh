@@ -8,6 +8,8 @@ PIDLIST=$(ls /proc | grep -v grep | grep '^[0-9]\{1,5\}$')
 LASTMEM=$(cat /proc/meminfo | grep -w MemFree | awk {'print $2'})
 LASTMEM=$(($LASTMEM / $DIV))
 
+LASTDMESGLN=$(dmesg | tail -n 1)
+
 while [ 1 ]; do
 #	PIDLIST=$(ls /proc | grep -v grep | grep '^[0-9]\{1,4\}$')
 	CACHE=$(cat /proc/meminfo | grep -w Cached | awk {'print $2'})
@@ -31,6 +33,13 @@ while [ 1 ]; do
 		done
 		LASTMEM=$MEMFREE
 		echo "--"
+	fi
+	DMESGLN=$(dmesg | tail -n 1)
+	if [ "$LASTDMESGLN" != "$DMESGLN" ]; then
+		echo "----- DMESG, last 20 lines -----"
+		dmesg | tail -n 20
+		echo "--------------------------------"
+		LASTDMESGLN=$DMESGLN
 	fi
 	sleep 1
 done
